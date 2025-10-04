@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>JSON Structure Verifier</title>
+  <title>Anuj | JSON Structure Verifier</title>
   <style>
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
@@ -108,7 +108,7 @@
 </head>
 <body>
   <div class="container">
-    <h2>🔍 JSON Structure Verifier</h2>
+    <h2>🔍 jGuard (JSON Structure Verifier)</h2>
 
     <label>Sample JSON (Template)</label>
     <input type="file" id="sampleJson" accept=".json">
@@ -161,7 +161,11 @@
         }
       } else if (typeof template === "object" && template !== null) {
         const errors = [];
-        for (let key of Object.keys(template)) {
+        const templateKeys = Object.keys(template);
+        const testKeys = Object.keys(test);
+        
+        // Check for missing keys in test JSON
+        for (let key of templateKeys) {
           if (!(key in test)) {
             errors.push(`Missing key "${path ? path + "." : ""}${key}"`);
           } else {
@@ -170,6 +174,14 @@
             );
           }
         }
+        
+        // Check for extra keys in test JSON
+        for (let key of testKeys) {
+          if (!(key in template)) {
+            errors.push(`Extra key "${path ? path + "." : ""}${key}" not present in template`);
+          }
+        }
+        
         return errors;
       }
       return [];
