@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Structure Verifier</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      width: 600px;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      font-weight: 500;
+      display: block;
+      margin: 15px 0 8px;
+      text-align: left;
+      color: #555;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+      cursor: pointer;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    #verifyBtn {
+      background: #0078d7;
+      color: #fff;
+    }
+
+    #verifyBtn:hover {
+      background: #005a9e;
+    }
+
+    #resetBtn {
+      background: #f3f3f3;
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    #resetBtn:hover {
+      background: #e0e0e0;
+    }
+
+    #result {
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: left;
+      display: none;
+    }
+
+    .success {
+      background: #d1f2d1;
+      border: 1px solid #28a745;
+      color: #155724;
+    }
+
+    .error {
+      background: #f8d7da;
+      border: 1px solid #dc3545;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔍 JSON Structure Verifier</h2>
+
+    <label>Sample JSON (Template)</label>
+    <input type="file" id="sampleJson" accept=".json">
+
+    <label>Test JSON (To Verify)</label>
+    <input type="file" id="testJson" accept=".json">
+
+    <div class="button-row">
+      <button id="verifyBtn">Verify</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const sampleInput = document.getElementById("sampleJson");
+    const testInput = document.getElementById("testJson");
+    const resultDiv = document.getElementById("result");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function readJsonFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            resolve(JSON.parse(reader.result));
+          } catch (err) {
+            reject("Invalid JSON: " + err.message);
+          }
+        };
+        reader.onerror = () => reject("Error reading file");
+        reader.readAsText(file);
+      });
+    }
+
+    function compareStructure(template, test, path = "") {
+      if (typeof template !== typeof test) {
+        return [`Type mismatch at "${path || 'root'}" (expected ${typeof template}, got ${typeof test})`];
+      }
+
+      if (Array.isArray(template)) {
+        if (!Array.isArray(test)) {
+          return [`Expected array at "${path || 'root'}"`];
+        }
+        if (template.length > 0 && typeof template[0] === "object") {
+          return test.flatMap((item, i) =>
+            compareStructure(template[0], item, `${path}[${i}]`)
+          );
+        }
+      } else if (typeof template === "object" && template !== null) {
+        const errors = [];
+        for (let key of Object.keys(template)) {
+          if (!(key in test)) {
+            errors.push(`Missing key "${path ? path + "." : ""}${key}"`);
+          } else {
+            errors.push(
+              ...compareStructure(template[key], test[key], `${path ? path + "." : ""}${key}`)
+            );
+          }
+        }
+        return errors;
+      }
+      return [];
+    }
+
+    document.getElementById("verifyBtn").addEventListener("click", async () => {
+      resultDiv.style.display = "block";
+      resultDiv.textContent = "";
+      resultDiv.className = "";
+
+      if (!sampleInput.files[0] || !testInput.files[0]) {
+        resultDiv.textContent = "⚠️ Please select both files.";
+        resultDiv.className = "error";
+        return;
+      }
+
+      try {
+        const sampleJson = await readJsonFile(sampleInput.files[0]);
+        const testJson = await readJsonFile(testInput.files[0]);
+
+        const errors = compareStructure(sampleJson, testJson);
+
+        if (errors.length === 0) {
+          resultDiv.textContent = "✅ Test JSON matches the Sample JSON structure.";
+          resultDiv.className = "success";
+        } else {
+          resultDiv.innerHTML = "❌ Structure mismatches found:<br>" + errors.join("<br>");
+          resultDiv.className = "error";
+        }
+      } catch (err) {
+        resultDiv.textContent = "Error: " + err;
+        resultDiv.className = "error";
+      }
+    });
+
+    // Reset button functionality
+    resetBtn.addEventListener("click", () => {
+      sampleInput.value = "";
+      testInput.value = "";
+      resultDiv.style.display = "none";
+      resultDiv.textContent = "";
+      resultDiv.className = "";
+    });
+  </script>
+</body>
+</html>
