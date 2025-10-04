@@ -1,0 +1,11 @@
+theme: jekyll-theme-minimal
+title: jGuard - JSON Structure Verifier
+description: JGuard is a simple yet powerful JSON structure verifier.
+
+Upload a sample JSON to serve as your benchmark template.
+
+Upload another JSON file to test.
+
+With one click, JGuard highlights mismatches in structure, missing keys, type inconsistencies, or incorrect nesting.
+
+Use JGuard to quickly validate API responses, configuration files, or datasets where structural consistency is critical.
