@@ -39,8 +39,9 @@
     }
 
     input[type="file"] {
+      font-family: 'Courier New', Courier, monospace;
       width: 100%;
-      padding: 8px;
+      padding:8px;
       border: 1px solid #ddd;
       border-radius: 8px;
       background: #fafafa;
@@ -110,12 +111,14 @@
   <div class="container">
     <h2>🛡️ jGuard (JSON Structure Verifier)</h2>
 
-    <label>Sample JSON (Template)</label>
-    <input type="file" id="sampleJson" accept=".json">
-
-    <label>Test JSON (To Verify)</label>
-    <input type="file" id="testJson" accept=".json">
-
+    <div>
+      <label>Sample JSON (Template)</label>
+      <input type="file" id="sampleJson" accept=".json">
+    </div>
+    <div style="padding-top:20px;">
+      <label>Test JSON (To Verify)</label>
+      <input type="file" id="testJson" accept=".json">
+    </div>
     <div class="button-row">
       <button id="verifyBtn">Verify</button>
       <button id="resetBtn">Reset</button>
